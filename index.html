@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SyncBeat // Doubly Linked List Music Player</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+        </div>
+        <div>
+          <h1>SyncBeat <span class="badge dsa-badge">Doubly Linked List</span></h1>
+          <p class="subtitle">Interactive Music Player &amp; Data Structure Visualizer</p>
+        </div>
+      </div>
+      
+      <div class="header-badges">
+        <div class="stat-pill">
+          <span class="label">Total Nodes:</span>
+          <span class="value" id="nodeCount">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="label">Mode:</span>
+          <span class="value highlight" id="listModeLabel">Linear DLL</span>
+        </div>
+        <button class="toggle-mode-btn" id="toggleCircularBtn" title="Toggle between Linear and Circular Doubly Linked List">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          <span id="circularBtnText">Make Circular</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="main-grid">
+      <!-- Left Column: Player Deck -->
+      <section class="player-card">
+        <div class="now-playing-header">
+          <span class="live-indicator">
+            <span class="dot"></span> NOW PLAYING
+          </span>
+          <span class="node-address" id="currentNodeAddress">Node: NULL</span>
+        </div>
+
+        <div class="album-art-wrapper">
+          <div class="vinyl-disc" id="vinylDisc">
+            <div class="vinyl-grooves"></div>
+            <div class="vinyl-center" id="vinylCenter">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon>
+              </svg>
+            </div>
+          </div>
+          <!-- Audio visualizer bars -->
+          <div class="audio-bars" id="audioBars">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+          </div>
+        </div>
+
+        <div class="track-details">
+          <h2 class="track-title" id="trackTitle">No Track Selected</h2>
+          <p class="track-artist" id="trackArtist">Add songs to start playlist</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-section">
+          <div class="progress-bar-container" id="progressBarContainer">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="time-display">
+            <span id="currentTimeText">0:00</span>
+            <span id="durationText">0:00</span>
+          </div>
+        </div>
+
+        <!-- Media Controls (Direct DLL pointer operations) -->
+        <div class="player-controls">
+          <button class="ctrl-btn" id="prevBtn" title="Previous Track (current = current.prev) [O(1)]">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="19 20 9 12 19 4 19 20"></polygon>
+              <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="3"></line>
+            </svg>
+          </button>
+
+          <button class="ctrl-btn play-main-btn" id="playPauseBtn" title="Play / Pause Synthesizer">
+            <svg id="playIcon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <svg id="pauseIcon" class="hidden" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16"></rect>
+              <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>
+          </button>
+
+          <button class="ctrl-btn" id="nextBtn" title="Next Track (current = current.next) [O(1)]">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 4 15 12 5 20 5 4"></polygon>
+              <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="3"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="extra-controls">
+          <div class="volume-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.7">
+          </div>
+          <button class="shuffle-btn" id="reverseListBtn" title="Reverse entire Doubly Linked List by swapping next & prev pointers">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="17 1 21 5 17 9"></polyline>
+              <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+              <polyline points="7 23 3 19 7 15"></polyline>
+              <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+            </svg>
+            Reverse DLL
+          </button>
+        </div>
+      </section>
+
+      <!-- Right Column: Visualizer & Operations -->
+      <section class="dsa-workbench">
+        <!-- Visualizer Area -->
+        <div class="visualizer-card">
+          <div class="card-header">
+            <div class="title-with-desc">
+              <h3>Memory &amp; Pointer Graph</h3>
+              <span class="subtext">Live view of Nodes with <code>prev</code> and <code>next</code> memory links</span>
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="badge badge-head">HEAD</span> First Node</span>
+              <span class="legend-item"><span class="badge badge-tail">TAIL</span> Last Node</span>
+              <span class="legend-item"><span class="badge badge-current">CURRENT</span> Pointer</span>
+            </div>
+          </div>
+
+          <div class="list-canvas-wrapper" id="listCanvasWrapper">
+            <div class="list-canvas" id="listCanvas">
+              <!-- Dynamically populated nodes -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Operations Panel -->
+        <div class="operations-grid">
+          <!-- Insertion Card -->
+          <div class="tool-card">
+            <h4><span class="icon">➕</span> Insert Track</h4>
+            <div class="form-group">
+              <input type="text" id="songTitleInput" placeholder="Song Title (e.g. Electric Dreams)" class="form-input">
+              <input type="text" id="songArtistInput" placeholder="Artist Name (e.g. Daft Wave)" class="form-input">
+            </div>
+            <div class="btn-group-row">
+              <button class="action-btn insert-head-btn" id="insertHeadBtn" title="Insert at beginning: O(1)">
+                + Insert at Head
+              </button>
+              <button class="action-btn insert-tail-btn" id="insertTailBtn" title="Insert at end: O(1)">
+                + Insert at Tail
+              </button>
+            </div>
+            <div class="insert-pos-row">
+              <input type="number" id="songPosInput" placeholder="Index (0-based)" min="0" class="form-input pos-input">
+              <button class="action-btn insert-pos-btn" id="insertPosBtn" title="Insert at specific index: O(n)">
+                Insert at Index
+              </button>
+            </div>
+          </div>
+
+          <!-- Deletion & Search Card -->
+          <div class="tool-card">
+            <h4><span class="icon">🗑️</span> Deletion &amp; Traversal</h4>
+            <div class="btn-group-row">
+              <button class="action-btn delete-cur-btn" id="deleteCurrentBtn" title="Delete currently playing node: O(1)">
+                Delete Current Track
+              </button>
+              <button class="action-btn delete-head-btn" id="deleteHeadBtn" title="Delete head node: O(1)">
+                Delete Head
+              </button>
+              <button class="action-btn delete-tail-btn" id="deleteTailBtn" title="Delete tail node: O(1)">
+                Delete Tail
+              </button>
+            </div>
+            
+            <div class="search-row">
+              <input type="text" id="searchInput" placeholder="Search song title..." class="form-input">
+              <button class="action-btn search-btn" id="searchBtn" title="Linear search across DLL: O(n)">
+                🔍 Find &amp; Play
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Algorithm & Complexity Breakdown -->
+        <div class="dsa-info-card">
+          <div class="info-header">
+            <h4><span class="icon">⚡</span> Complexity &amp; Pointer Execution</h4>
+            <div class="complexity-tags">
+              <span class="tag-label">Time:</span>
+              <span class="complexity-badge" id="timeComplexity">O(1)</span>
+              <span class="tag-label">Space:</span>
+              <span class="complexity-badge" id="spaceComplexity">O(1)</span>
+            </div>
+          </div>
+          
+          <div class="explanation-box">
+            <p class="operation-name" id="lastOpName">Operation: Ready</p>
+            <pre class="code-snippet"><code id="codeSnippet">// Pointer assignments will appear here live when you perform operations!
+// Example:
+newNode->prev = tail;
+tail->next = newNode;
+tail = newNode;</code></pre>
+          </div>
+
+          <!-- Operation Audit Log -->
+          <div class="audit-log-container">
+            <div class="audit-log-header">
+              <span>Execution History</span>
+              <button class="clear-log-btn" id="clearLogBtn">Clear</button>
+            </div>
+            <div class="audit-log" id="auditLog">
+              <div class="log-entry system">[System] Initialized Doubly Linked List with sample tracks.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Data Structures Project • Doubly Linked List (DLL) Architecture • Pointer-safe node mutations</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
